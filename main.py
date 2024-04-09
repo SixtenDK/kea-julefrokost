@@ -1,5 +1,12 @@
 # Julefrokost tilmeldnings hjemmeside/app
 # KEA Programmering Eksamens projekt
+# Tjek for modules: flask, sqlite3, requests, zipfile, io, shutil
+# For at køre programmet, skal du installere de nødvendige modules
+# pip install flask
+# pip install requests
+# pip install zipfile
+# pip install io
+# pip install shutil
 from flask import Flask, render_template, request, redirect
 import sqlite3
 
@@ -197,16 +204,27 @@ def check_for_templates():
     import os
     if not os.path.exists('templates'):
         os.makedirs('templates')
+    else:
+        print("Templates folder already exists")
 
+    # Check om vi mangler en af de tre templates
+    # Hvis vi mangler en af de tre templates, henter vi dem fra github repository
+    if not os.path.exists('templates/index.html'):
         import requests
         import zipfile
         import io
 
-        url = "https://github.com/sixtendk/julefrokost/archive/refs/heads/main.zip"
+        url = "https://github.com/SixtenDK/kea-julefrokost/archive/refs/heads/main.zip"
         r = requests.get(url)
         z = zipfile.ZipFile(io.BytesIO(r.content))
-        z.extractall('templates')
-
+        z.extractall()
+    
+        import shutil
+        shutil.move('kea-julefrokost-main/templates/index.html', './templates/')
+        shutil.move('kea-julefrokost-main/templates/print.html', './templates/')
+        shutil.move('kea-julefrokost-main/templates/tilmeldings-formular.html', './templates/')
+        # Fjern kea-julefrokost-main mappen
+        shutil.rmtree('kea-julefrokost-main')
 
 
 # Hvis main.py bliver kørt, vil __name__ være __main__ og koden vil blive kørt
@@ -216,6 +234,8 @@ if __name__ == '__main__':
     # Insert some data into the database
     if c.execute("SELECT * FROM participants").fetchone() is None:
         import_test_users()
+
+    check_for_templates()
 
     # Kører appen på port 9080 og host
     app.run(debug=True,port=9080,host='0.0.0.0')
