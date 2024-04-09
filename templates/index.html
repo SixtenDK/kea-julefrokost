@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>julefrokost</title>
+</head>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* .full-responsive {
+        display: table;
+        width: 100%;
+        height: 100vh;
+    } */
+</style>
+<body class="full-responsive">
+
+    <!--Button for navigation-->
+    <style>
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            
+        }
+
+        .nav div {
+            cursor: pointer;
+            padding: 25px;
+            transition: background-color 0.3s ease-in-out;
+            background-color: rgb(181 181 181);
+            text-align: center;
+            font-size: 85px;
+            border-radius: 8px;
+        }
+
+        .nav div:hover {
+            transition: background-color 0.3s ease-in-out;
+            background-color: rgb(181 181 181 / 50%);
+        }
+
+        .nav div a {
+            text-decoration: none;
+            color: white;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <section class="center">
+        <h1 style="font-size: 85px; text-wrap: none;">julefrokost tilmelding</h1>
+        <div class="nav">
+            <div><a href="/tilmeld">Tilmeld</a></div>
+            <div><a href="/deltagere?sort=not_paid">Ikke Betalt</a></div>
+            <div><a href="/deltagere?sort=paid">Betalt</a></div>
+            <div><a href="/deltagere">Alle Tilmeldte</a></div>
+        </div>
+    </section>
+</body>
+</html>

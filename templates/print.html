@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>julefrokost deltagere</title>
+    <style>
+        /* Add any custom styles for printing here */
+    </style>
+</head>
+<body>
+    <!-- Deltager liste -->
+
+    <style>
+        table {
+            width: 50%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .tilbage {
+            display: block;
+            width: 100px;
+            padding: 10px;
+            text-align: center;
+            border: solid 1px #000;
+            text-decoration: none;
+            color: #000;
+            margin-top: 10px;
+        }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th>Navn</th>
+                <th>Email</th>
+                <th>Telefon</th>
+                <th>Betalings metode</th>
+                <th>Betalt/Ikke betalt</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Loop over participants -->
+            {% for participant in participants %}
+                <tr>
+                    <td>{{ participant.0 }}</td>
+                    <td>{{ participant.1 }}</td>
+                    <td>{{ participant.2 }}</td>
+                    <td>{{ participant.3 }}</td>
+                    <td>{% if participant.4 == 1 %}Betalt{% else %}Ikke betalt{% endif %}</td>
+                    {% if participant.4 == 0 %}
+                        <td><a href="/betal/{{participant.1}}">Betal</a></td>
+                    {% else %}
+                        <td><a href="/betal/{{participant.1}}">Fjern betaling</a></td>
+                    {% endif %}
+                    
+                    {% if participant.4 == 0 %}
+                        <td><a href="/slet/{{participant.1}}">Slet</a></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p>{{ stats }}</p>
+    <a class="tilbage" href="/">Tilbage</a>
+</body>
+</html>
