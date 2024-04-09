@@ -1,13 +1,8 @@
 # Julefrokost tilmeldnings hjemmeside/app
 # KEA Programmering Eksamens projekt
 # Tjek for modules: flask, sqlite3, requests, zipfile, io, shutil
-# For at køre programmet, skal du installere de nødvendige modules
-# pip install flask
-# pip install requests
-# pip install zipfile
-# pip install io
-# pip install shutil
-from flask import Flask, render_template, request, redirect
+# For at køre programmet, skal du installere de nødvendige modules ovenfor
+from flask import Flask, render_template, request, redirect, session
 import sqlite3
 
 # Flask app
@@ -15,6 +10,18 @@ import sqlite3
 # Flask er en klasse
 # app er en instans af klassen Flask
 app = Flask(__name__)
+app.secret_key = 'dit_hemmelige_nøgle'
+
+# Middleware til autentificering
+@app.before_request
+def authenticate():
+    # Brug brugernavn og password til at autentificere
+    brugernavn = "sekretær"
+    password = "kea2024"
+
+    # Hvis brugeren ikke er logget ind, bliver de sendt til login siden
+    if request.endpoint != 'login' and not session.get('brugernavn') == brugernavn and not session.get('password') == password:
+        return redirect('/login')
 
 # Database connection
 # Jeg har valgt at bruge en in-memory database, da det er nemmere at teste og debugge
@@ -125,6 +132,27 @@ def all_stats():
     }
 
 # __________Routing__________
+# Login side til autentificering af sekretæren.
+@app.route('/login', methods=['GET'])
+def login():
+
+    # Store brugernavn og password i session, så vi kan tjekke om brugeren er logget ind den får username og kode fra url via GET request
+    # Dette kunne være lavet mere sikkert ved at bruge POST request og form data i stedet for GET request og url parametre
+    session['brugernavn'] = request.args.get('username')
+    session['password'] = request.args.get('password')
+
+    # Hvis brugernavn og password er korrekt, bliver brugeren sendt til forsiden
+    if session['brugernavn'] == "sekretær" and session['password'] == "kea2024":
+        return redirect('/')
+
+    return render_template('login.html')
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    session.pop('brugernavn', None)
+    session.pop('password', None)
+    return redirect('/login')
+
 # @app.route('/'), definerer en route til /, som er hjemmesiden
 # def index(): returnerer index.html og bliver kørt når nogen går til hjemmesiden
 @app.route('/')
@@ -209,7 +237,7 @@ def check_for_templates():
 
     # Check om vi mangler en af de tre templates
     # Hvis vi mangler en af de tre templates, henter vi dem fra github repository
-    if not os.path.exists('templates/index.html'):
+    if not os.path.exists('templates/index.html') or not os.path.exists('templates/print.html') or not os.path.exists('templates/tilmeldings-formular.html') or not os.path.exists('templates/login.html'):
         import requests
         import zipfile
         import io
@@ -223,6 +251,7 @@ def check_for_templates():
         shutil.move('kea-julefrokost-main/templates/index.html', './templates/')
         shutil.move('kea-julefrokost-main/templates/print.html', './templates/')
         shutil.move('kea-julefrokost-main/templates/tilmeldings-formular.html', './templates/')
+        shutil.move('kea-julefrokost-main/templates/login.html', './templates/')
         # Fjern kea-julefrokost-main mappen
         shutil.rmtree('kea-julefrokost-main')
 
