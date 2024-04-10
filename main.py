@@ -1,18 +1,25 @@
 # Julefrokost tilmeldnings hjemmeside/app
 # KEA Programmering Eksamens projekt
-# Tjek for modules: flask, sqlite3, requests, zipfile, io, shutil
+# Tjek for modules: flask, requests, zipfile, io, shutil
 # For at køre programmet, skal du installere de nødvendige modules ovenfor
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+
+from threading import Thread
 
 # Flask app
 # __name__ er navnet på modulet
 # Flask er en klasse
 # app er en instans af klassen Flask
 app = Flask(__name__)
-app.secret_key = 'dit_hemmelige_nøgle'
+
+# Denne secret key bruges til at signere session cookien, dette sikre i mod angreb som session fixation
+# Dette er en meget simpel secret key, i produktion skal denne være meget længere og mere kompleks
+app.secret_key = 'EnSuperHemmeligNøgle'
 
 # Middleware til autentificering
+# Før hver request, tjekker vi om brugeren er logget ind
+# Hvis brugeren ikke er logget ind, bliver de sendt til login siden
 @app.before_request
 def authenticate():
     # Brug brugernavn og password til at autentificere
@@ -24,12 +31,8 @@ def authenticate():
         return redirect('/login')
 
 # Database connection
-# Jeg har valgt at bruge en in-memory database, da det er nemmere at teste og debugge
-# check_same_thread=False er nødvendig, da SQLite ikke er thread-safe
-# thread-safe betyder at flere tråde kan tilgå databasen samtidig, hvilket SQLite ikke kan
-# conn = sqlite3.connect(':memory:', check_same_thread=False)
-
-# Hvis du vil gemme data i en fil, kan du bruge følgende linje i stedet for linje 16
+# sqlite3 er en indbygget database i python
+# connect() metoden opretter en forbindelse til en database
 # Dette opretter en fil kaldet julefrokost.db i samme mappe som main.py
 conn = sqlite3.connect('julefrokost.db', check_same_thread=False)
 
@@ -225,6 +228,8 @@ def slet(email):
 
     return redirect("/deltagere", code=302)
 
+# Check for templates, hvis de ikke eksisterer, hentes de fra github repository
+# Dette sørger for at scriptet her er det eneste der skal køres for at få appen til at køre
 def check_for_templates():
     # Tjek om templates mappen eksisterer
     # Hvis den ikke gør det skal vi oprette den, samt hente index.html/print.html/tilmeldings-formular.html
@@ -242,12 +247,18 @@ def check_for_templates():
         import zipfile
         import io
 
+        # Hent github repository som zip fil
         url = "https://github.com/SixtenDK/kea-julefrokost/archive/refs/heads/main.zip"
+        # Hent zip filen
         r = requests.get(url)
+        # Åbn zip filen
         z = zipfile.ZipFile(io.BytesIO(r.content))
+        # Extract zip filen
         z.extractall()
-    
+
+        # Shutil er et modul til at håndtere filer og mapper
         import shutil
+        # Brug shutil til at flytte filerne fra kea-julefrokost-main mappen til templates mappen
         shutil.move('kea-julefrokost-main/templates/index.html', './templates/')
         shutil.move('kea-julefrokost-main/templates/print.html', './templates/')
         shutil.move('kea-julefrokost-main/templates/tilmeldings-formular.html', './templates/')
@@ -255,6 +266,53 @@ def check_for_templates():
         # Fjern kea-julefrokost-main mappen
         shutil.rmtree('kea-julefrokost-main')
 
+
+def baggrundsopgave():
+    # Kører en baggrundsopgave, der tjekker for mobilepay betalinger
+    # Hvis der er en betaling, opdateres betalingsstatus i databasen
+    import requests
+    import json
+    import time
+
+    while True:
+        # Hent betalinger fra mobilepay api
+        url = "https://api.sandbox.mobilepay.dk/merchant/v1/payments"
+        headers = {
+            "Content-Type": "application/json",
+            "x-ibm-client-id": "5f9c7d6d-7e0c-4f2f-8f4f-4c1a5b6c1b2b",
+            "x-ibm-client-secret": "Q5xG7oJ1iL7tJ0hT6sN7qN7pN1wJ5gU3fM6dM7gU1wR3hU1bN"
+        }
+        r = requests.get(url, headers=headers)
+
+        # Hvis der er en fejl, print fejlen
+        if r.status_code != 200:
+            print("Error: ", r.status_code)
+            print(r.text)
+            time.sleep(60)
+            continue
+
+        # Hvis der ikke er nogen betalinger, vent 60 sekunder og tjek igen
+        if r.json().get('payments') is None:
+            print("No payments")
+            time.sleep(60)
+            continue
+
+        # Hvis der er betalinger, tjek om de er i databasen
+        for payment in r.json().get('payments'):
+            # Hvis betalingen ikke er i databasen, fortsæt
+            if c.execute("SELECT * FROM participants WHERE payment_method = 'MobilePay' AND payment_status = 0 AND phone = ?", (payment['payer']['phoneNumber'],)).fetchone() is None:
+                continue
+
+            # Hvis betalingen er i databasen, opdater betalingsstatus til 1
+            c.execute("UPDATE participants SET payment_status = 1 WHERE payment_method = 'MobilePay' AND payment_status = 0 AND phone = ?", (payment['payer']['phoneNumber'],))
+            conn.commit()
+
+        # Vent 60 sekunder og tjek igen
+        time.sleep(60)
+
+# Opretter og starter en tråd, der kører baggrundsopgaven
+# thread = Thread(target=baggrundsopgave)
+# thread.start()
 
 # Hvis main.py bliver kørt, vil __name__ være __main__ og koden vil blive kørt
 # Hvis main.py bliver importeret i et andet script, vil __name__ være navnet på modulet og koden vil ikke blive kørt
