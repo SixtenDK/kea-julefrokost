@@ -1,11 +1,23 @@
 # Julefrokost tilmeldnings hjemmeside/app
 # KEA Programmering Eksamens projekt
-# Tjek for modules: flask, requests, zipfile, io, shutil
+# Tjek for modules: flask, requests
 # For at køre programmet, skal du installere de nødvendige modules ovenfor
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+import bcrypt
 
-from threading import Thread
+# Baggrundsopgave (Hvis vi vil have en baggrundsopgave, der kører i baggrunden, mens vores app kører)
+# from threading import Thread
+# Opretter og starter en tråd, der kører baggrundsopgaven
+# def baggrundsopgave():
+#     while True:
+#         print("Baggrundsopgave")
+#         time.sleep(5)
+#         # Her kan vi indsætte vores baggrundsopgave
+#         # F.eks. tjekke om der er nogen der har betalt og sende en påmindelse
+#         # Dette kunne også gøres med en cronjob eller en scheduler
+# thread = Thread(target=baggrundsopgave)
+# thread.start()
 
 # Flask app
 # __name__ er navnet på modulet
@@ -17,18 +29,29 @@ app = Flask(__name__)
 # Dette er en meget simpel secret key, i produktion skal denne være meget længere og mere kompleks
 app.secret_key = 'EnSuperHemmeligNøgle'
 
+# Opret en hashet adgangskode for sekretæren
+# Bemærk: Dette trin skal kun gøres én gang, og derefter skal du gemme den hashede adgangskode et sikkert sted
+sekretaer_password = "kea2024".encode('utf-8')
+# bcrypt er en krypterings algoritme, der bruges til at hashe adgangskoder
+# gensalt() genererer et salt, som bruges til at gøre hashet mere sikker
+# hashpw() hasher adgangskoden med saltet
+hashed_password = bcrypt.hashpw(sekretaer_password, bcrypt.gensalt(12))
+
 # Middleware til autentificering
 # Før hver request, tjekker vi om brugeren er logget ind
 # Hvis brugeren ikke er logget ind, bliver de sendt til login siden
 @app.before_request
 def authenticate():
-    # Brug brugernavn og password til at autentificere
+    # Brugernavn og hashet password for sekretæren
     brugernavn = "sekretær"
-    password = "kea2024"
+    # Antag, at denne hashede adgangskode er gemt et sikkert sted, fx i en database eller en miljøvariabel
+    stored_hashed_password = hashed_password
 
     # Hvis brugeren ikke er logget ind, bliver de sendt til login siden
-    if request.endpoint != 'login' and not session.get('brugernavn') == brugernavn and not session.get('password') == password:
-        return redirect('/login')
+    if request.endpoint != 'login':
+        session_password = session.get('password', '').encode('utf-8')
+        if not session.get('brugernavn') == brugernavn or not bcrypt.checkpw(session_password, stored_hashed_password):
+            return redirect('/login')
 
 # Database connection
 # sqlite3 er en indbygget database i python
@@ -94,29 +117,30 @@ def sort_list_participants(participants, sort = ""):
 def import_test_users():
     # Test data for at fylde databasen pakket ind i en liste, hvor hvert element er en tuple
     test_users = [
-        ("John Doe", "john@example.com", "12345678", "MobilePay", 1),
-        ("Jane Smith", "jane@example.com", "87654321", "Bank transfer", 0),
-        ("Alice Johnson", "alice@example.com", "98765432", "Credit card", 1),
-        ("Bob Anderson", "bob@example.com", "54321678", "PayPal", 0),
-        ("Eve Wilson", "eve@example.com", "23456789", "Venmo", 1),
-        ("Grace Lee", "grace@example.com", "34567890", "Cash", 0),
-        ("Michael Brown", "michael@example.com", "98765432", "Bank transfer", 1),
-        ("Sarah Johnson", "sarah@example.com", "45678901", "Credit card", 0),
-        ("David Smith", "david@example.com", "10987654", "PayPal", 1),
-        ("Olivia Wilson", "olivia@example.com", "56789012", "Venmo", 0),
-        ("James Lee", "james@example.com", "21098765", "Cash", 1),
-        ("Emma Brown", "emma@example.com", "65432109", "Bank transfer", 0),
+        ("Karl Jensen", "karl@example.com", "12523678", "mobilepay", 1),
+        ("John Doe", "john@example.com", "12345678", "mobilepay", 1),
+        ("Jane Smith", "jane@example.com", "87654321", "mobilepay", 0),
+        ("Alice Johnson", "alice@example.com", "98765432", "kontant", 1),
+        ("Bob Anderson", "bob@example.com", "54321678", "kontant", 0),
+        ("Eve Wilson", "eve@example.com", "23456789", "kontant", 1),
+        ("Grace Lee", "grace@example.com", "34567890", "mobilepay", 0),
+        ("Michael Brown", "michael@example.com", "98765432", "mobilepay", 1),
+        ("Sarah Johnson", "sarah@example.com", "45678901", "mobilepay", 0),
+        ("David Smith", "david@example.com", "10987654", "kontant", 1),
+        ("Olivia Wilson", "olivia@example.com", "56789012", "kontant", 0),
+        ("James Lee", "james@example.com", "21098765", "kontant", 1),
+        ("Emma Brown", "emma@example.com", "65432109", "mobilepay", 0),
         ("William Anderson", "william@example.com", "89012345", "MobilePay", 1),
-        ("Sophia Doe", "sophia@example.com", "43210987", "Credit card", 0),
-        ("Alexander Johnson", "alexander@example.com", "76543210", "PayPal", 1),
-        ("Mia Smith", "mia@example.com", "90123456", "Venmo", 0),
-        ("Benjamin Wilson", "benjamin@example.com", "32109876", "Cash", 1)
+        ("Sophia Doe", "sophia@example.com", "43210987", "mobilepay", 0),
+        ("Alexander Johnson", "alexander@example.com", "76543210", "kontant", 1),
+        ("Mia Smith", "mia@example.com", "90123456", "kontant", 0),
+        ("Benjamin Wilson", "benjamin@example.com", "32109876", "kontant", 1)
     ]
 
     # For hver bruger i test_users listen, indsættes brugeren i databasen
     for user in test_users:
         # * betyder at vi unpacker tuplen, så vi får hver værdi i tuplen som et argument
-        insert_into_db(*user)
+        insert_into_db(*user) # Example på unpacking: insert_into_db("Karl Jensen", "........")......
 
 def all_stats():
     # Get all participants
@@ -138,14 +162,17 @@ def all_stats():
 # Login side til autentificering af sekretæren.
 @app.route('/login', methods=['GET'])
 def login():
-
-    # Store brugernavn og password i session, så vi kan tjekke om brugeren er logget ind den får username og kode fra url via GET request
+    # Gem brugernavn og password i session, så vi kan tjekke om brugeren er logget ind den får username og kode fra url via GET request
     # Dette kunne være lavet mere sikkert ved at bruge POST request og form data i stedet for GET request og url parametre
     session['brugernavn'] = request.args.get('username')
     session['password'] = request.args.get('password')
 
+    stored_hashed_password = hashed_password
+    if session.get('password') is not None:
+        session_password = session.get('password', '').encode('utf-8')
+
     # Hvis brugernavn og password er korrekt, bliver brugeren sendt til forsiden
-    if session['brugernavn'] == "sekretær" and session['password'] == "kea2024":
+    if session['brugernavn'] == "sekretær" and bcrypt.checkpw(session_password, stored_hashed_password):
         return redirect('/')
 
     return render_template('login.html')
@@ -180,6 +207,9 @@ def tilmeld_post():
     phone = request.form['telefon']
     payment_method = request.form['betalings-metode']
     payment_status = 0
+
+
+
     # Indsætter brugeren i databasen
     insert_into_db(name, email, phone, payment_method, payment_status)
     # Reroute tilbage til tilmeldings-formularen med en besked om at tilmeldingen er gennemført
@@ -189,43 +219,58 @@ def tilmeld_post():
 # kaldes deltagere() funktionen som håndterer GET requesten og viser en liste over alle deltagere
 @app.route('/deltagere', methods=['GET'])
 def deltagere():
+    # Stats viser nogle ekstra informationer om deltagelse
     stats = all_stats()
+    # Henter GET parametre
     args = request.args
+    # Hvis der er en sort parameter, sorteres listen efter denne parameter
     sort = args.get('sort', '')
     sort = sort.lower()
+    # Hvis sort parameteren er not_paid, sorteres listen efter deltagere der ikke har betalt
     if sort == 'not_paid':
         participants = sort_list_participants(show_participants(), sort)
+    # Hvis sort parameteren er paid, sorteres listen efter deltagere der har betalt
     elif sort == 'paid':
         participants = sort_list_participants(show_participants(), sort)
+    # Hvis sort parameteren er tom, vises alle deltagere
     else:
         participants = sort_list_participants(show_participants())      
-
+    
+    # Viser listen over deltagere
     return render_template('print.html', participants=participants, stats=stats)
 
+# Betal deltager
 @app.route('/betal/<email>', methods=['GET', 'POST'])
 def betal(email):
+    # Henter betalingsstatusen for brugeren
     c.execute("SELECT payment_status FROM participants WHERE email = ?", (email,))
     payment_status = c.fetchone()[0]
+    # Hvis betalingsstatusen er 1, sættes den til 0
     if payment_status == 1:
         c.execute("UPDATE participants SET payment_status = 0 WHERE email = ?", (email,))
         conn.commit()
+    # Hvis betalingsstatusen er 0, sættes den til 1
     elif payment_status == 0:
         c.execute("UPDATE participants SET payment_status = 1 WHERE email = ?", (email,))
         conn.commit()
-
+    # Reroute tilbage til deltagere siden
     return redirect("/deltagere", code=302)
 
+# Slet deltager
 @app.route('/slet/<email>', methods=['GET', 'POST'])
 def slet(email):
+    # Henter betalingsstatusen for brugeren
     c.execute("SELECT payment_status FROM participants WHERE email = ?", (email,))
     payment_status = c.fetchone()[0]
+    # Hvis betalingsstatusen er 1, sættes den til 0
     if payment_status == 1:
         c.execute("UPDATE participants SET payment_status = 0 WHERE email = ?", (email,))
         conn.commit()
+    # Hvis betalingsstatusen er 0, slettes brugeren fra databasen
     elif payment_status == 0:
         c.execute("DELETE FROM participants WHERE email = ?", (email,))
         conn.commit()
-
+    # Reroute tilbage til deltagere siden
     return redirect("/deltagere", code=302)
 
 # Check for templates, hvis de ikke eksisterer, hentes de fra github repository
@@ -266,53 +311,16 @@ def check_for_templates():
         # Fjern kea-julefrokost-main mappen
         shutil.rmtree('kea-julefrokost-main')
 
+# Betalingssystem
+# @app.route('/mobilepay/<phone>', methods=['GET'])
+# def mobilepay(phone):
+#     return render_template('mobilepay.html', phone=phone)
 
-def baggrundsopgave():
-    # Kører en baggrundsopgave, der tjekker for mobilepay betalinger
-    # Hvis der er en betaling, opdateres betalingsstatus i databasen
-    import requests
-    import json
-    import time
-
-    while True:
-        # Hent betalinger fra mobilepay api
-        url = "https://api.sandbox.mobilepay.dk/merchant/v1/payments"
-        headers = {
-            "Content-Type": "application/json",
-            "x-ibm-client-id": "5f9c7d6d-7e0c-4f2f-8f4f-4c1a5b6c1b2b",
-            "x-ibm-client-secret": "Q5xG7oJ1iL7tJ0hT6sN7qN7pN1wJ5gU3fM6dM7gU1wR3hU1bN"
-        }
-        r = requests.get(url, headers=headers)
-
-        # Hvis der er en fejl, print fejlen
-        if r.status_code != 200:
-            print("Error: ", r.status_code)
-            print(r.text)
-            time.sleep(60)
-            continue
-
-        # Hvis der ikke er nogen betalinger, vent 60 sekunder og tjek igen
-        if r.json().get('payments') is None:
-            print("No payments")
-            time.sleep(60)
-            continue
-
-        # Hvis der er betalinger, tjek om de er i databasen
-        for payment in r.json().get('payments'):
-            # Hvis betalingen ikke er i databasen, fortsæt
-            if c.execute("SELECT * FROM participants WHERE payment_method = 'MobilePay' AND payment_status = 0 AND phone = ?", (payment['payer']['phoneNumber'],)).fetchone() is None:
-                continue
-
-            # Hvis betalingen er i databasen, opdater betalingsstatus til 1
-            c.execute("UPDATE participants SET payment_status = 1 WHERE payment_method = 'MobilePay' AND payment_status = 0 AND phone = ?", (payment['payer']['phoneNumber'],))
-            conn.commit()
-
-        # Vent 60 sekunder og tjek igen
-        time.sleep(60)
-
-# Opretter og starter en tråd, der kører baggrundsopgaven
-# thread = Thread(target=baggrundsopgave)
-# thread.start()
+# @app.route('/mobilepay/<phone>', methods=['POST'])
+# def mobilepay_post(phone):
+#     c.execute("UPDATE participants SET payment_status = 1 WHERE phone = ?", (phone,))
+#     conn.commit()
+#     return redirect('/deltagere')
 
 # Hvis main.py bliver kørt, vil __name__ være __main__ og koden vil blive kørt
 # Hvis main.py bliver importeret i et andet script, vil __name__ være navnet på modulet og koden vil ikke blive kørt
@@ -322,6 +330,7 @@ if __name__ == '__main__':
     if c.execute("SELECT * FROM participants").fetchone() is None:
         import_test_users()
 
+    # Check for templates
     check_for_templates()
 
     # Kører appen på port 9080 og host
