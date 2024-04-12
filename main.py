@@ -41,7 +41,7 @@ hashed_password = bcrypt.hashpw(sekretaer_password, bcrypt.gensalt(12))
 # Før hver request, tjekker vi om brugeren er logget ind
 # Hvis brugeren ikke er logget ind, bliver de sendt til login siden
 @app.before_request
-def authenticate():
+def authenticate() -> None:
     # Brugernavn og hashet password for sekretæren
     brugernavn = "sekretær"
     # Antag, at denne hashede adgangskode er gemt et sikkert sted, fx i en database eller en miljøvariabel
@@ -69,7 +69,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS participants
 
 # Show_participants function
 # Henter alle deltagere fra databasen
-def show_participants():
+def show_participants() -> list:
     c.execute("SELECT * FROM participants")
     return c.fetchall()
 
@@ -77,7 +77,7 @@ def show_participants():
 # Tjekker om email og telefon nummer allerede eksisterer i databasen
 # Hvis email eller telefon nummer allerede eksisterer i databasen, returneres en besked
 # Dette kunne laves smartere ved at håndtere det i sql med constraints men det er uden for scope af dette projekt
-def insert_into_db(name, email, phone, payment_method, payment_status):
+def insert_into_db(name, email, phone, payment_method, payment_status) -> None:
     # Tjekker om email og telefon nummer allerede eksisterer i databasen
     check_email = c.execute("SELECT email FROM participants WHERE email = ?", (email,))
     # fetchone() henter en række fra databasen og returnerer den som en tuple, hvis der ikke er nogen rækker, returneres None
@@ -103,7 +103,7 @@ def insert_into_db(name, email, phone, payment_method, payment_status):
 
 # Sorter deltager listen efter navn
 # key=lambda x: x[0] = sortere efter første element i listen
-def sort_list_participants(participants, sort = ""):
+def sort_list_participants(participants, sort = "") -> list:
     if sort == 'not_paid':
         participants_t = c.execute("SELECT * FROM participants WHERE payment_status = 0")
     elif sort == 'paid':
@@ -114,7 +114,7 @@ def sort_list_participants(participants, sort = ""):
     return sorted(participants_t, key=lambda x: x[0])
 
 # Test data for at fylde databasen
-def import_test_users():
+def import_test_users() -> None:
     # Test data for at fylde databasen pakket ind i en liste, hvor hvert element er en tuple
     test_users = [
         ("Karl Jensen", "karl@example.com", "12523678", "mobilepay", 1),
@@ -142,7 +142,7 @@ def import_test_users():
         # * betyder at vi unpacker tuplen, så vi får hver værdi i tuplen som et argument
         insert_into_db(*user) # Example på unpacking: insert_into_db("Karl Jensen", "........")......
 
-def all_stats():
+def all_stats() -> dict:
     # Get all participants
     participants = show_participants()
     # Get total number of participants
@@ -161,7 +161,7 @@ def all_stats():
 # __________Routing__________
 # Login side til autentificering af sekretæren.
 @app.route('/login', methods=['GET'])
-def login():
+def login() -> None:
     # Gem brugernavn og password i session, så vi kan tjekke om brugeren er logget ind den får username og kode fra url via GET request
     # Dette kunne være lavet mere sikkert ved at bruge POST request og form data i stedet for GET request og url parametre
     session['brugernavn'] = request.args.get('username')
@@ -178,7 +178,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/logout', methods=['GET'])
-def logout():
+def logout() -> None:
     session.pop('brugernavn', None)
     session.pop('password', None)
     return redirect('/login')
@@ -186,21 +186,21 @@ def logout():
 # @app.route('/'), definerer en route til /, som er hjemmesiden
 # def index(): returnerer index.html og bliver kørt når nogen går til hjemmesiden
 @app.route('/')
-def index():
+def index() -> None:
     return render_template('index.html')
 
 # @app.route('/tilmeld'), definerer en route via /tilmeld
 # def tilmeld(): returnerer tilmeldings-formularen og bliver kørt når nogen går til /tilmeld
 # Her kan folk skrive sig op til julefrokosten.
 @app.route('/tilmeld')
-def tilmeld():
+def tilmeld() -> None:
     # Reroute til tilmeldings-formularen
     return render_template('tilmeldings-formular.html')
 
 # POST request til /tilmeld, når brugeren har udfyldt tilmeldings-formularen og trykket på tilmeld knappen
 # kaldes tilmeld_post() funktionen som håndterer POST requesten og tilføjer brugeren til databasen, hvis brugeren ikke allerede eksisterer.
 @app.route('/tilmeld', methods=['POST'])
-def tilmeld_post():
+def tilmeld_post() -> None:
     # Henter data fra formularen
     name = request.form['navn']
     email = request.form['email']
@@ -218,7 +218,7 @@ def tilmeld_post():
 # GET request til /deltagere, når brugeren går til /deltagere
 # kaldes deltagere() funktionen som håndterer GET requesten og viser en liste over alle deltagere
 @app.route('/deltagere', methods=['GET'])
-def deltagere():
+def deltagere() -> None:
     # Stats viser nogle ekstra informationer om deltagelse
     stats = all_stats()
     # Henter GET parametre
@@ -241,7 +241,7 @@ def deltagere():
 
 # Betal deltager
 @app.route('/betal/<email>', methods=['GET', 'POST'])
-def betal(email):
+def betal(email) -> None:
     # Henter betalingsstatusen for brugeren
     c.execute("SELECT payment_status FROM participants WHERE email = ?", (email,))
     payment_status = c.fetchone()[0]
@@ -258,7 +258,7 @@ def betal(email):
 
 # Slet deltager
 @app.route('/slet/<email>', methods=['GET', 'POST'])
-def slet(email):
+def slet(email) -> None:
     # Henter betalingsstatusen for brugeren
     c.execute("SELECT payment_status FROM participants WHERE email = ?", (email,))
     payment_status = c.fetchone()[0]
@@ -275,7 +275,7 @@ def slet(email):
 
 # Check for templates, hvis de ikke eksisterer, hentes de fra github repository
 # Dette sørger for at scriptet her er det eneste der skal køres for at få appen til at køre
-def check_for_templates():
+def check_for_templates() -> None:
     # Tjek om templates mappen eksisterer
     # Hvis den ikke gør det skal vi oprette den, samt hente index.html/print.html/tilmeldings-formular.html
     # Fra github repository
@@ -310,17 +310,6 @@ def check_for_templates():
         shutil.move('kea-julefrokost-main/templates/login.html', './templates/')
         # Fjern kea-julefrokost-main mappen
         shutil.rmtree('kea-julefrokost-main')
-
-# Betalingssystem
-# @app.route('/mobilepay/<phone>', methods=['GET'])
-# def mobilepay(phone):
-#     return render_template('mobilepay.html', phone=phone)
-
-# @app.route('/mobilepay/<phone>', methods=['POST'])
-# def mobilepay_post(phone):
-#     c.execute("UPDATE participants SET payment_status = 1 WHERE phone = ?", (phone,))
-#     conn.commit()
-#     return redirect('/deltagere')
 
 # Hvis main.py bliver kørt, vil __name__ være __main__ og koden vil blive kørt
 # Hvis main.py bliver importeret i et andet script, vil __name__ være navnet på modulet og koden vil ikke blive kørt
