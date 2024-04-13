@@ -1,5 +1,6 @@
 # Julefrokost tilmeldnings hjemmeside/app
 # KEA Programmering Eksamens projekt
+# Author: Sixten Nexø Grahn
 # Tjek for modules: flask, requests
 # For at køre programmet, skal du installere de nødvendige modules ovenfor
 from flask import Flask, render_template, request, redirect, session
