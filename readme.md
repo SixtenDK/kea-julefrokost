@@ -1,5 +1,9 @@
 # Kea programmering
 
+## Usage
+´´´
+python3 main.py
+´´´
 ## Brugeroplysninger
 Username: sekretær\
 Password: kea2024
@@ -16,3 +20,10 @@ hvor foreningssekretæren skal kunne indtaste tilmeldinger til den årlige julef
 - Print navn på tilmeldte, der ikke har betalt.
 - Print navn på tilmeldte, der har betalt.
 - Print alle tilmeldte. 
+
+## Opbygning af min applikation
+Jeg har valgt at følge opgaven, så man i min applikation kan indtaste navn\
+Her er der blevet lavet lidt om på betalingsmetoden, hvor man kan vælge mobilepay/kontant.
+
+Der så lavet en oversigt hvor i at man kan ændre betalingsstatus, og slette brugere.
+Der også mulighed for at se andre oplysninger.
