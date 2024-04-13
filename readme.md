@@ -2,8 +2,12 @@
 
 ## Usage
 ```
+
 python3 main.py
 ```
+
+Ved kørsel af programmet, starter der en webserver op på port 9080.\
+Denne webserver kan du tilgå via dette link http://localhost:9080
 ## Brugeroplysninger
 Username: sekretær\
 Password: kea2024
