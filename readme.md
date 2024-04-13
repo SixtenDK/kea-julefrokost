@@ -1,5 +1,5 @@
 # Kea programmering
 
 ## Brugeroplysninger
-Username: sekretær
+Username: sekretær \
 Password: kea2024
