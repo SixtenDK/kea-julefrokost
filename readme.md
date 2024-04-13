@@ -1,9 +1,9 @@
 # Kea programmering
 
 ## Usage
-´´´
+```
 python3 main.py
-´´´
+```
 ## Brugeroplysninger
 Username: sekretær\
 Password: kea2024
