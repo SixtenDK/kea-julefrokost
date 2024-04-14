@@ -209,7 +209,8 @@ def tilmeld_post() -> None:
     payment_method = request.form['betalings-metode']
     payment_status = 0
 
-
+    if payment_method == "mobilepay":
+        payment_status = 1
 
     # Indsætter brugeren i databasen
     insert_into_db(name, email, phone, payment_method, payment_status)
