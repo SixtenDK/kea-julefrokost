@@ -18,12 +18,16 @@ hvor foreningssekretæren skal kunne indtaste tilmeldinger til den årlige julef
 ## Minimumskravfrabrugerperspektiv:
 ### En bruger skal kunne indtaste stamdata for en tilmelding herunder: 
 - Navn
-- Har deltageren betalt? 
+- Har deltageren betalt?
 
 ### Brugeren skal kunne danne et overblik over tilmeldte vha. følgende funktioner:
 - Print navn på tilmeldte, der ikke har betalt.
 - Print navn på tilmeldte, der har betalt.
 - Print alle tilmeldte. 
+
+## Literatur liste
+- https://flask.palletsprojects.com/en/3.0.x/
+- https://www.w3schools.com/
 
 ## Kort beskrivelse af programmet
 Dette program er bygget så vores sekrætær kan tilmelde folk til julefrokost.\
@@ -64,6 +68,3 @@ Programmet gemmer tilmeldingerne i en SQLite database, som er en letvægtsdataba
 - Brugeren skal kunne oprette en bruger.
 - Brugeren skal kunne ændre sin adgangskode.
 
-## Literatur liste
-- https://flask.palletsprojects.com/en/3.0.x/
-- https://www.w3schools.com/
