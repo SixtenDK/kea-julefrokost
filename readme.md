@@ -73,5 +73,3 @@ Programmet gemmer tilmeldingerne i en SQLite database, som er en letvægtsdataba
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
-
-```
