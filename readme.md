@@ -67,9 +67,3 @@ Programmet gemmer tilmeldingerne i en SQLite database, som er en letvægtsdataba
 ## Literatur liste
 - https://flask.palletsprojects.com/en/3.0.x/
 - https://www.w3schools.com/
-
-## Forfatter
-- [Sixten Nexø Grahn]()
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
