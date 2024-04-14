@@ -25,12 +25,29 @@ hvor foreningssekretæren skal kunne indtaste tilmeldinger til den årlige julef
 - Print navn på tilmeldte, der har betalt.
 - Print alle tilmeldte. 
 
-## Opbygning af min applikation
-Jeg har valgt at følge opgaven, så man i min applikation kan indtaste navn\
-Her er der blevet lavet lidt om på betalingsmetoden, hvor man kan vælge mobilepay/kontant.
+## Kort beskrivelse af programmet
+Programmet er en webapplikation, som er bygget med Flask. Flask er et microframework til Python, som er designet til at være let at bruge og udvide. Flask er en del af Pallets-projekterne, som er en samling af små og lette værktøjer til at udvikle webapplikationer i Python. Flask er designet til at være let at bruge og udvide, og det er derfor et godt valg til små og mellemstore projekter.
 
-Der så lavet en oversigt hvor i at man kan ændre betalingsstatus, og slette brugere.
-Der også mulighed for at se andre oplysninger.
+Programmet er en simpel webapplikation, som giver brugeren mulighed for at indtaste stamdata for en tilmelding til en julefrokost. Brugeren kan indtaste navn og om deltageren har betalt. Programmet giver brugeren mulighed for at danne et overblik over tilmeldingerne ved at printe navnene på de tilmeldte, der ikke har betalt, navnene på de tilmeldte, der har betalt, og alle tilmeldingerne.
+
+## Motivation for valg af opgaven
+Jeg har valgt at lave en webapplikation til tilmelding til en julefrokost, fordi det er en simpel og overskuelig opgave, som jeg kan løse med Flask. Jeg har valgt at bruge Flask, fordi det er et letvægtsframework, som er nemt at bruge og udvide. Jeg har valgt at lave en webapplikation, fordi det er en god måde at øve mig i at arbejde med Flask og webudvikling.
+
+### Teknologier
+- Flask
+- Python
+- HTML
+- CSS
+- JavaScript
+- sqlite3
+
+## Forslag til mulige forbedringer
+- Brugeren skal kunne redigere en tilmelding.
+- Brugeren skal kunne søge efter en tilmelding.
+- Brugeren skal kunne eksportere tilmeldingerne til en CSV-fil.
+- Brugeren skal kunne importere tilmeldingerne fra en CSV-fil.
+- Brugeren skal kunne oprette en bruger.
+- Brugeren skal kunne ændre sin adgangskode.
 
 ## Literatur liste
 - https://flask.palletsprojects.com/en/3.0.x/
